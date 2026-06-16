@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const voiceBtn = document.getElementById('voice-btn');
     const langStatus = document.getElementById('lang-status');
 
-    const GROQ_API_KEY = "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";   // ← Replace with your real key
-
     let currentLang = 'hi';
     let recognition = null;
     let isListening = false;
@@ -20,21 +18,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Language Switcher
     function switchLanguage(lang) {
         currentLang = lang;
-
-        // Update active button
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
         });
-
         langStatus.textContent = languageConfig[lang].status;
-
-        // Reinitialize voice with new language
-        if (recognition) {
-            initSpeechRecognition();
-        }
+        if (recognition) initSpeechRecognition();
     }
 
-    // Add message
     function addMessage(text, isUser = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message flex ${isUser ? 'justify-end' : 'justify-start'}`;
@@ -48,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    // AI Response
+    // Call Backend Proxy (Key stays safe on server)
     async function getAIResponse(query) {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing';
@@ -58,34 +48,24 @@ document.addEventListener('DOMContentLoaded', function() {
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
         try {
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${GROQ_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
+            const response = await fetch('http://localhost:5000/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [
-                        {
-                            role: "system",
-                            content: `You are KISAN-SATHI, a helpful AI farming assistant. Always respond in ${languageConfig[currentLang].name}. Use simple and practical language for farmers.`
-                        },
-                        { role: "user", content: query }
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 700
+                    message: query,
+                    language: currentLang
                 })
             });
 
-            const data = await response.json();
-            const aiReply = data.choices[0].message.content;
+            if (!response.ok) throw new Error("Server error");
 
+            const data = await response.json();
             typingDiv.remove();
-            addMessage(aiReply);
+            addMessage(data.reply);
+
         } catch (error) {
             typingDiv.remove();
-            addMessage("Sorry, there is some issue with AI service. Please try again later.");
+            addMessage("⚠️ Backend server is not running. Please start the Node.js backend (port 5000).");
         }
     }
 
@@ -143,18 +123,15 @@ document.addEventListener('DOMContentLoaded', function() {
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     voiceBtn.addEventListener('click', toggleListening);
 
-    // Language Button Listeners
     document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            switchLanguage(btn.dataset.lang);
-        });
+        btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
     });
 
     // Initialize
-    switchLanguage('hi');   // Default Hindi
+    switchLanguage('hi');
 
     setTimeout(() => {
-        addMessage("नमस्ते! 🌾 ऊपर दिए भाषा बटन से English, हिंदी या বাংলा चुनें और पूछें।");
+        addMessage("नमस्ते! 🌾 पहले बैकएंड सर्वर शुरू करें, फिर भाषा चुनकर पूछें।");
     }, 600);
 
     initSpeechRecognition();
