@@ -66,7 +66,15 @@ app.post('/api/chat', async (req, res) => {
         });
 
         const data = await response.json();
-        res.json({ reply: data.choices[0].message.content });
+
+if (!response.ok || !data.choices) {
+  console.error("Groq API error:", data);
+  return res.status(500).json({ 
+    error: data.error?.message || "Groq API returned unexpected response" 
+  });
+}
+
+res.json({ reply: data.choices[0].message.content });
 
     } catch (error) {
         console.error(error);
