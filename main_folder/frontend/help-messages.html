@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Help Messages - KISAN-SATHI Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+            <a href="index.html" class="flex items-center gap-3 flex-shrink-0">
+                <img src="../credentials/logo.png" alt="KISAN-SATHI Logo" class="w-14 h-14 object-contain scale-110">
+                <span class="font-bold text-gray-900 text-lg tracking-tight">KISAN-SATHI <span class="text-gray-400 font-normal text-sm">/ Admin</span></span>
+            </a>
+            <div class="flex items-center gap-3">
+                <span id="admin-status" class="text-sm text-gray-500"></span>
+                <button id="admin-logout-btn" class="hidden text-sm px-3 py-1.5 rounded-md text-red-600 hover:bg-red-50 transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Log out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-10 max-w-4xl">
+
+        <!-- Login gate: shown until a valid token is present -->
+        <div id="admin-login-gate" class="max-w-sm mx-auto bg-white border border-gray-200 rounded-xl shadow p-6 mt-10">
+            <h1 class="text-xl font-bold text-gray-800 mb-1">Admin Sign In</h1>
+            <p class="text-sm text-gray-500 mb-5">Log in with your KISAN-SATHI account to view Help &amp; Support messages.</p>
+            <form id="admin-login-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Phone Number</label>
+                    <input type="text" id="admin-phone" required class="w-full p-2 border rounded-md text-sm" placeholder="Registered phone number">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Password</label>
+                    <input type="password" id="admin-password" required class="w-full p-2 border rounded-md text-sm" placeholder="Password">
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md text-sm font-medium transition">Log In</button>
+                <p id="admin-login-error" class="text-xs text-center text-red-600 hidden"></p>
+            </form>
+        </div>
+
+        <!-- Messages view: shown once logged in -->
+        <div id="admin-messages-view" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Help &amp; Support Messages</h1>
+                    <p class="text-sm text-gray-500">Messages submitted through the website's Help &amp; Support form.</p>
+                </div>
+                <button id="refresh-messages-btn" class="text-sm px-3 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
+                    <i class="fas fa-rotate-right mr-1"></i> Refresh
+                </button>
+            </div>
+
+            <div id="messages-empty" class="hidden text-center py-16 text-gray-400">
+                <i class="fas fa-inbox text-4xl mb-3"></i>
+                <p>No messages yet.</p>
+            </div>
+
+            <div id="messages-list" class="space-y-3"></div>
+        </div>
+    </main>
+
+    <script>
+        // 🟢 If your backend runs on a different host/port than this page,
+        // change API_BASE_URL below (e.g. "http://localhost:5000").
+        var API_BASE_URL = 'http://localhost:5000';
+        var TOKEN_KEY = 'kisansathi_admin_token';
+
+        var loginGate = document.getElementById('admin-login-gate');
+        var messagesView = document.getElementById('admin-messages-view');
+        var loginForm = document.getElementById('admin-login-form');
+        var loginError = document.getElementById('admin-login-error');
+        var adminStatus = document.getElementById('admin-status');
+        var logoutBtn = document.getElementById('admin-logout-btn');
+        var messagesList = document.getElementById('messages-list');
+        var messagesEmpty = document.getElementById('messages-empty');
+        var refreshBtn = document.getElementById('refresh-messages-btn');
+
+        function getToken() {
+            return localStorage.getItem(TOKEN_KEY);
+        }
+
+        function showLoggedIn(userName) {
+            loginGate.classList.add('hidden');
+            messagesView.classList.remove('hidden');
+            logoutBtn.classList.remove('hidden');
+            adminStatus.textContent = userName ? ('Signed in as ' + userName) : '';
+        }
+
+        function showLoggedOut() {
+            loginGate.classList.remove('hidden');
+            messagesView.classList.add('hidden');
+            logoutBtn.classList.add('hidden');
+            adminStatus.textContent = '';
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(iso) {
+            try {
+                var d = new Date(iso);
+                return d.toLocaleString();
+            } catch (e) {
+                return iso;
+            }
+        }
+
+        function renderMessages(messages) {
+            messagesList.innerHTML = '';
+
+            if (!messages || messages.length === 0) {
+                messagesEmpty.classList.remove('hidden');
+                return;
+            }
+            messagesEmpty.classList.add('hidden');
+
+            messages.forEach(function (m) {
+                var card = document.createElement('div');
+                card.className = 'bg-white border border-gray-200 rounded-lg p-4 flex items-start justify-between gap-4';
+
+                var statusColor = m.status === 'resolved' ? 'bg-green-100 text-green-700'
+                    : m.status === 'read' ? 'bg-blue-100 text-blue-700'
+                    : 'bg-yellow-100 text-yellow-700';
+
+                card.innerHTML =
+                    '<div class="flex-1">' +
+                        '<div class="flex items-center gap-2 mb-1">' +
+                            '<p class="font-semibold text-gray-800">' + escapeHtml(m.name) + '</p>' +
+                            '<span class="text-xs px-2 py-0.5 rounded-full ' + statusColor + '">' + escapeHtml(m.status || 'new') + '</span>' +
+                        '</div>' +
+                        '<p class="text-sm text-gray-500 mb-2">' + escapeHtml(m.contact) + ' &middot; ' + formatDate(m.sentAt) + '</p>' +
+                        '<p class="text-sm text-gray-700">' + escapeHtml(m.message) + '</p>' +
+                    '</div>' +
+                    '<div class="flex flex-col gap-2 flex-shrink-0">' +
+                        '<button data-id="' + m.id + '" data-status="read" class="mark-status-btn text-xs px-2.5 py-1 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50">Mark Read</button>' +
+                        '<button data-id="' + m.id + '" data-status="resolved" class="mark-status-btn text-xs px-2.5 py-1 rounded-md border border-green-200 text-green-700 hover:bg-green-50">Resolve</button>' +
+                    '</div>';
+
+                messagesList.appendChild(card);
+            });
+
+            // wire up status buttons
+            document.querySelectorAll('.mark-status-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var id = btn.getAttribute('data-id');
+                    var status = btn.getAttribute('data-status');
+                    updateMessageStatus(id, status);
+                });
+            });
+        }
+
+        function loadMessages() {
+            var token = getToken();
+            if (!token) {
+                showLoggedOut();
+                return;
+            }
+
+            fetch(API_BASE_URL + '/api/help-messages', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+                .then(function (res) {
+                    if (res.status === 401) {
+                        localStorage.removeItem(TOKEN_KEY);
+                        showLoggedOut();
+                        loginError.textContent = 'Your session expired. Please log in again.';
+                        loginError.classList.remove('hidden');
+                        throw new Error('unauthorized');
+                    }
+                    return res.json();
+                })
+                .then(function (data) {
+                    renderMessages(data.messages || []);
+                })
+                .catch(function (err) {
+                    if (err.message !== 'unauthorized') {
+                        console.error(err);
+                    }
+                });
+        }
+
+        function updateMessageStatus(id, status) {
+            var token = getToken();
+            fetch(API_BASE_URL + '/api/help-messages/' + id, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ status: status })
+            })
+                .then(function () { loadMessages(); })
+                .catch(function (err) { console.error(err); });
+        }
+
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            loginError.classList.add('hidden');
+
+            var phone = document.getElementById('admin-phone').value.trim();
+            var password = document.getElementById('admin-password').value;
+
+            fetch(API_BASE_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone, password: password })
+            })
+                .then(function (res) {
+                    return res.json().then(function (data) {
+                        return { ok: res.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (!result.ok) {
+                        loginError.textContent = result.data.error || 'Login failed.';
+                        loginError.classList.remove('hidden');
+                        return;
+                    }
+                    localStorage.setItem(TOKEN_KEY, result.data.token);
+                    showLoggedIn(result.data.user && result.data.user.name);
+                    loadMessages();
+                })
+                .catch(function () {
+                    loginError.textContent = 'Could not reach the server. Please check your connection.';
+                    loginError.classList.remove('hidden');
+                });
+        });
+
+        logoutBtn.addEventListener('click', function () {
+            localStorage.removeItem(TOKEN_KEY);
+            showLoggedOut();
+        });
+
+        refreshBtn.addEventListener('click', loadMessages);
+
+        // On page load: if a token already exists, try loading messages directly
+        (function init() {
+            var token = getToken();
+            if (token) {
+                showLoggedIn(null);
+                loadMessages();
+            } else {
+                showLoggedOut();
+            }
+        })();
+    </script>
+</body>
+</html>

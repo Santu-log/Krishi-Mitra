@@ -350,6 +350,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+    // Date and Time to User 
+    // --- Set Dynamic Login Time ---
+    const loginBadge = document.getElementById('current-login-badge');
+    if (loginBadge) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        loginBadge.textContent = `Logged in: ${timeString}`;
+    }
 
     // Settings Modal Logic
     const settingsBtn = document.getElementById('settings-btn');
