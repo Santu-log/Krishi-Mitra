@@ -1,5 +1,5 @@
 // Global language configuration and state
-let currentLang = 'hi';
+let currentLang = 'en';
 
 const translations = {
     en: {
@@ -147,6 +147,17 @@ function switchAppLanguage(lang) {
     if (langStatus && languageConfig[lang]) {
         langStatus.textContent = languageConfig[lang].status;
     }
+   const welcomeMessages = {
+    en: "Welcome to KISAN-SATHI 🌾 How can I help you with your farming today?",
+    hi: "किसान-साथी में आपका स्वागत है 🌾 आज मैं आपकी खेती में कैसे सहायता कर सकता हूँ?",
+    bn: "কিষান-সাথীতে আপনাকে স্বাগতম 🌾 আজ আমি আপনার চাষাবাদে কীভাবে সাহায্য করতে পারি?"
+};
+
+const firstBotMessage = document.querySelector('.ai-message p');
+
+if (firstBotMessage) {
+    firstBotMessage.textContent = welcomeMessages[lang];
+}
 }
 
 // Locations Data
@@ -287,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const profileSection = document.getElementById('profile-section');
     const welcomeText = document.getElementById('welcome-text');
     const logoutBtn = document.getElementById('logout-btn');
-    
+
     // Edit Profile Modal Elements
     const profileModal = document.getElementById('profile-modal');
     const editProfileBtn = document.getElementById('edit-profile-btn');
@@ -494,12 +505,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    switchAppLanguage('hi');
+    switchAppLanguage('en');
     initLocationSelectors();
     document.getElementById("crop-btn")?.addEventListener("click", getCropRecommendation);
 
     setTimeout(() => {
-        if (chatContainer) addMessage("नमस्ते! 🌾 पहले बैकएंड सर्वर शुरू करें, फिर भाषा चुनकर पूछें।");
+        if (chatContainer) addMessage(`Welcome to KISAN-SATHI 🌾
+
+How can I help you with your farming today? `);
     }, 600);
 
     initSpeechRecognition();
@@ -509,7 +522,7 @@ const WEATHER_API = "https://api.open-meteo.com/v1/forecast";
 
 async function getWeather(lat, lon, locationName) {
     const url = `${WEATHER_API}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,surface_pressure,cloud_cover&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=auto&forecast_days=7`;
-    
+
     const response = await fetch(url);
     const data = await response.json();
 
@@ -523,8 +536,8 @@ async function getWeather(lat, lon, locationName) {
 
     let alertBox = document.getElementById("weather-alert-box");
     let alertEl = document.getElementById("weather-alert");
-    
-    if(alertBox && alertEl) {
+
+    if (alertBox && alertEl) {
         let alertText = "";
         if (data.daily.precipitation_probability_max[0] >= 70) {
             alertText = "🌧 Heavy rain expected. Avoid fertilizer spraying.";
@@ -604,7 +617,7 @@ function getCropRecommendation() {
         crops = ["Watermelon", "Cucumber", "Vegetables"];
     }
 
-    if(resultBox) {
+    if (resultBox) {
         resultBox.classList.remove("hidden");
         resultBox.innerHTML = `
             <h4 class="font-bold text-green-700 mb-2">Recommended Crops</h4>
