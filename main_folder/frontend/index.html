@@ -13,149 +13,93 @@
 
 <body>
     <!-- Header/Navigation -->
-  
-    <!-- Header -->
-<header class="bg-white border-b border-gray-100 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 md:px-5">
-
-        <div class="h-16 flex items-center justify-between">
+    <header class="bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
 
             <!-- Logo -->
-            <a href="#" class="flex items-center gap-2 md:gap-3">
-                <img src="../credentials/logo.png"
-                    alt="KISAN-SATHI Logo"
-                    class="w-12 h-12 md:w-20 md:h-20 object-contain">
+            <a href="#" class="flex items-center gap-3 flex-shrink-0">
+                <!-- Increased from w-8 h-8 to w-14 h-14, removed rounded-md so it does not clip -->
+                <img src="../credentials/logo.png" alt="KISAN-SATHI Logo" class="w-20 h-20 object-contain scale-110">
 
-                <span class="font-bold text-gray-900 text-sm md:text-lg tracking-tight"
-                    data-translate="app-name">
+                <!-- Increased text size from text-[15px] to text-lg to balance the larger logo -->
+                <span class="font-bold text-gray-900 text-lg tracking-tight" data-translate="app-name">
                     KISAN-SATHI
                 </span>
             </a>
 
-            <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center gap-1 flex-1 ml-6">
-                <a href="#dashboard"
-                    class="text-sm px-3 py-1.5 rounded-md text-green-800 bg-green-50 font-medium"
-                    data-translate="nav-dashboard">
-                    Dashboard
-                </a>
-
-                <a href="#advisory"
-                    class="text-sm px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition"
-                    data-translate="nav-advisory">
-                    Advisories
-                </a>
-
-                <a href="#ai-chat"
-                    class="text-sm px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition"
-                    data-translate="nav-ai">
-                    AI Chat
-                </a>
-
-                <a href="#help"
-                    class="text-sm px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition"
-                    data-translate="nav-help">
-                    Help
-                </a>
+            <!-- Nav Links mapped to translation keys -->
+            <nav class="hidden md:flex items-center gap-1 flex-1">
+                <a href="#dashboard" data-translate="nav-dashboard"
+                    class="text-sm px-3 py-1.5 rounded-md text-green-800 bg-green-50 font-medium">Dashboard</a>
+                <a href="#advisory" data-translate="nav-advisory"
+                    class="text-sm px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition">Advisories</a>
+                <a href="#ai-chat" data-translate="nav-ai"
+                    class="text-sm px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition">AI
+                    Chat</a>
+                <a href="#help" data-translate="nav-help"
+                    class="text-sm px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition">Help</a>
             </nav>
 
-            <!-- Desktop Right Section -->
-            <div class="hidden md:flex items-center gap-3">
+            <!-- language toggle -->
+            <div class="flex bg-gray-100 rounded-full p-1 shadow-inner">
+                <button onclick="switchAppLanguage('en')" data-lang="en"
+                    class="lang-btn px-6 py-2 rounded-full text-sm font-medium active transition">English</button>
+                <button onclick="switchAppLanguage('hi')" data-lang="hi"
+                    class="lang-btn px-6 py-2 rounded-full text-sm font-medium transition">Hindi</button>
+                <button onclick="switchAppLanguage('bn')" data-lang="bn"
+                    class="lang-btn px-6 py-2 rounded-full text-sm font-medium transition">Bengali</button>
+            </div>
 
-                <!-- Language Toggle -->
-                <div class="flex bg-gray-100 rounded-full p-1 shadow-inner">
-                    <button onclick="switchAppLanguage('en')"
-                        class="lang-btn px-4 py-2 rounded-full text-sm font-medium active">
-                        English
-                    </button>
+            <!-- Auth section -->
+            <div id="auth-section" class="flex items-center gap-2 flex-shrink-0">
+                <!-- Signed out -->
+                <a href="auth.html" id="signin-btn"
+                    class="flex items-center gap-1.5 bg-green-700 hover:bg-green-800 text-green-50 text-sm font-medium px-4 py-2 rounded-md transition">
+                    <i class="fas fa-user text-xs"></i> Sign in
+                </a>
 
-                    <button onclick="switchAppLanguage('hi')"
-                        class="lang-btn px-4 py-2 rounded-full text-sm font-medium">
-                        Hindi
-                    </button>
+                <!-- Signed in -->
+                <div id="profile-section" class="hidden items-center gap-2">
+                    <div class="relative" id="profile-menu-wrap">
+                        <button id="profile-menu-btn"
+                            class="flex items-center gap-2 border border-gray-200 rounded-md px-2.5 py-1.5 hover:bg-gray-50 transition">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700"
+                                id="avatar-initials">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span id="welcome-text" class="text-sm font-medium text-gray-800"></span>
+                            <i class="fas fa-chevron-down text-[10px] text-gray-400" id="chevron-icon"></i>
+                        </button>
 
-                    <button onclick="switchAppLanguage('bn')"
-                        class="lang-btn px-4 py-2 rounded-full text-sm font-medium">
-                        Bengali
-                    </button>
+                        <div id="profile-dropdown"
+                            class="hidden absolute right-0 mt-1.5 w-48 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                            <div class="px-3.5 py-3 border-b border-gray-100">
+                                <p class="text-sm font-medium text-gray-900" id="dropdown-name"></p>
+                                <p class="text-xs text-gray-500 mt-0.5" id="dropdown-email"></p>
+                            </div>
+
+                            <button id="edit-profile-btn"
+                                class="flex items-center gap-2.5 w-full text-left px-3.5 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+                                <i class="fas fa-user-edit w-4"></i> Edit profile
+                            </button>
+
+                            <button id="settings-btn"
+                                class="flex items-center gap-2.5 w-full text-left px-3.5 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+                                <i class="fas fa-cog w-4"></i> Settings
+                            </button>
+
+                            <div class="border-t border-gray-100"></div>
+
+                            <button id="logout-btn"
+                                class="flex items-center gap-2.5 w-full text-left px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition">
+                                <i class="fas fa-sign-out-alt w-4"></i> Log out
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- Auth -->
-                <div id="auth-section" class="flex items-center gap-2">
-                    <a href="auth.html" id="signin-btn"
-                        class="flex items-center gap-1.5 bg-green-700 hover:bg-green-800 text-green-50 text-sm font-medium px-4 py-2 rounded-md transition">
-                        <i class="fas fa-user text-xs"></i>
-                        Sign in
-                    </a>
-                </div>
             </div>
-
-            <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn"
-                class="md:hidden text-gray-700 text-2xl">
-                <i class="fas fa-bars"></i>
-            </button>
-
         </div>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu"
-            class="hidden md:hidden pb-4 border-t border-gray-100">
-
-            <nav class="flex flex-col gap-2 mt-4">
-
-                <a href="#dashboard"
-                    class="px-4 py-2 rounded-md bg-green-50 text-green-700">
-                    Dashboard
-                </a>
-
-                <a href="#advisory"
-                    class="px-4 py-2 rounded-md hover:bg-gray-100">
-                    Advisories
-                </a>
-
-                <a href="#ai-chat"
-                    class="px-4 py-2 rounded-md hover:bg-gray-100">
-                    AI Chat
-                </a>
-
-                <a href="#help"
-                    class="px-4 py-2 rounded-md hover:bg-gray-100">
-                    Help
-                </a>
-
-            </nav>
-
-            <!-- Mobile Language Buttons -->
-            <div class="flex flex-wrap gap-2 mt-4">
-                <button onclick="switchAppLanguage('en')"
-                    class="px-4 py-2 bg-gray-100 rounded-full">
-                    English
-                </button>
-
-                <button onclick="switchAppLanguage('hi')"
-                    class="px-4 py-2 bg-gray-100 rounded-full">
-                    Hindi
-                </button>
-
-                <button onclick="switchAppLanguage('bn')"
-                    class="px-4 py-2 bg-gray-100 rounded-full">
-                    Bengali
-                </button>
-            </div>
-
-            <!-- Mobile Auth -->
-            <div class="mt-4">
-                <a href="auth.html"
-                    class="block text-center bg-green-700 text-white py-2 rounded-md">
-                    Sign In
-                </a>
-            </div>
-
-        </div>
-
-    </div>
-</header>
+    </header>
 
     <!-- Hero Section with mapped dictionary items -->
     <section class="bg-gradient-to-r from-green-500 to-green-700 text-white py-16">
@@ -934,24 +878,6 @@
             });
         }
     </script>
-    <script>
-const mobileMenuBtn = document.getElementById("mobile-menu-btn");
-const mobileMenu = document.getElementById("mobile-menu");
-
-mobileMenuBtn.addEventListener("click", () => {
-    mobileMenu.classList.toggle("hidden");
-
-    const icon = mobileMenuBtn.querySelector("i");
-
-    if (mobileMenu.classList.contains("hidden")) {
-        icon.classList.remove("fa-times");
-        icon.classList.add("fa-bars");
-    } else {
-        icon.classList.remove("fa-bars");
-        icon.classList.add("fa-times");
-    }
-});
-</script>
 </body>
 
 </html>
