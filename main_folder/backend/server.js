@@ -8,7 +8,18 @@ const path = require('path'); // 🟢 Path module
 dotenv.config();
 //console.log("Diagnostic Key Check:", process.env.GROQ_API_KEY);
 const app = express();
-app.use(cors());
+// const cors = require("cors");
+
+app.use(cors({
+  origin: [
+    "https://krishi-mitra-lmog.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const SECRET_KEY = "kisansathi_super_secret_key"; 

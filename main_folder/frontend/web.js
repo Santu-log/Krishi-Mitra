@@ -1,3 +1,6 @@
+
+const API_BASE_URL = "https://krishi-mitra-ad9o.onrender.com";
+
 // Global language configuration and state
 let currentLang = 'en';
 
@@ -339,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const newPhone = document.getElementById('edit-phone').value;
 
                 try {
-                    const response = await fetch('http://localhost:5000/api/profile', {
+                    const response = await fetch(`${API_BASE_URL}/api/profile`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token, newName, newPhone })
@@ -425,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
         try {
-            const response = await fetch('http://localhost:5000/api/chat', {
+            const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: query, language: currentLang })
